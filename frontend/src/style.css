@@ -1,23 +1,37 @@
-/* Your existing CSS for body, etc. */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+}
+
+#game-setup {
+    margin-bottom: 20px;
+}
+
+#game-id-display {
+    margin-top: 10px;
+    font-size: 1em;
+    color: #333;
+}
+
+#game-board {
+    display: none; /* Hidden by default, shown when game starts */
+    grid-template-columns: repeat(3, 100px);
+    grid-gap: 10px;
+    margin-top: 20px;
+}
 
 .game-cell {
     width: 100px;
     height: 100px;
-    border: 1px solid #000;
+    background-color: #f0f0f0;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
     font-size: 2em;
     cursor: pointer;
-}
-
-#game-board {
-    margin: 20px;
-    display: grid;
-    grid-template-columns: repeat(3, 100px); /* 3 game cells per row */
-    grid-gap: 5px;
-}
-
-.hidden {
-    display: none;
+    border: 1px solid #000;
 }

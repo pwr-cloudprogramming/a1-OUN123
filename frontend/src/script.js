@@ -1,68 +1,97 @@
 document.addEventListener('DOMContentLoaded', function() {
     const usernameInput = document.getElementById('username');
     const startGameButton = document.getElementById('start-game');
+    const joinGameButton = document.getElementById('join-game');
     const gameBoard = document.getElementById('game-board');
+    const gameCells = document.querySelectorAll('.game-cell');
     const gameMessage = document.getElementById('game-message');
-    let currentPlayer = 'X';
-    let gameState = ['', '', '', '', '', '', '', '', ''];
+    const gameIdDisplay = document.getElementById('game-id-display');
+    let gameId = null;
+    let playerSymbol = null;
 
     startGameButton.addEventListener('click', function() {
         const username = usernameInput.value.trim();
-        if (username) {
-            fetch('http://localhost:3000/enter', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ username: username })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (!data.waiting) {
-                    gameBoard.style.display = 'grid';
-                    // Clear the game message when starting a new game
-                    gameMessage.innerText = '';
+        if (!username) {
+            alert('Please enter a username.');
+            return;
+        }
+        fetch('http://localhost:3000/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username })
+        })
+        .then(response => response.json())
+        .then(data => {
+            gameId = data.gameId;
+            playerSymbol = data.symbol;
+            gameIdDisplay.textContent = `Game ID: ${gameId}`;
+            gameBoard.style.display = 'grid';
+            gameMessage.textContent = 'Waiting for an opponent...';
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+    joinGameButton.addEventListener('click', function() {
+        const username = usernameInput.value.trim();
+        gameId = prompt('Enter the Game ID provided by the first player:');
+        if (!username || !gameId) {
+            alert('Please enter a username and a game ID.');
+            return;
+        }
+        fetch('http://localhost:3000/join', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, gameId })
+        })
+        .then(response => response.json())
+        .then(data => {
+            playerSymbol = data.symbol;
+            gameBoard.style.display = 'grid';
+            gameMessage.textContent = `Joined game as ${playerSymbol}. Your move!`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+    });
+
+    gameCells.forEach(cell => {
+        cell.addEventListener('click', function() {
+            if (!this.textContent && gameId && playerSymbol === playerSymbol) {
+                makeMove(this.getAttribute('data-index'));
+            }
+        });
+    });
+
+    function makeMove(index) {
+        fetch('http://localhost:3000/move', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ gameId: gameId, symbol: playerSymbol, tile: index })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                updateBoard(data.board);
+                if (data.winner) {
+                    gameMessage.textContent = data.winner === 'Draw' ? 'It\'s a draw!' : `Player ${data.winner} wins!`;
+                    gameBoard.classList.add('game-over');
                 } else {
-                    gameMessage.innerText = 'Waiting for an opponent...';
+                    gameMessage.textContent = data.turn === playerSymbol ? "Your move" : "Opponent's move";
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
-        }
-    });
-
-    gameBoard.addEventListener('click', function(event) {
-        if (event.target.className.includes('game-cell') && !event.target.innerText && !gameMessage.innerText) {
-            event.target.innerText = currentPlayer;
-            gameState[event.target.dataset.index] = currentPlayer;
-            const gameWon = checkGameStatus();
-            if (gameWon) {
-                gameMessage.innerText = currentPlayer + ' wins!';
-                gameBoard.removeEventListener('click', handleTileClick);
-                return;
-            } else if (!gameState.includes('')) {
-                gameMessage.innerText = 'It\'s a draw!';
-                return;
+            } else {
+                gameMessage.textContent = 'Invalid move or not your turn.';
             }
-            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
-        }
-    });
+        })
+        .catch(error => {
+            console.error('Error making a move:', error);
+        });
+    }
 
-    function checkGameStatus() {
-        const winConditions = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
-            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
-            [0, 4, 8], [2, 4, 6]             // Diagonals
-        ];
-
-        return winConditions.some(condition => {
-            if (gameState[condition[0]] === currentPlayer &&
-                gameState[condition[0]] === gameState[condition[1]] &&
-                gameState[condition[0]] === gameState[condition[2]]) {
-                return true;
-            }
-            return false;
+    function updateBoard(board) {
+        board.forEach((cell, index) => {
+            gameCells[index].textContent = cell;
         });
     }
 });
