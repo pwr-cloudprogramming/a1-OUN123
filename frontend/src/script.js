@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please enter a username.');
             return;
         }
-        fetch('http://localhost:3000/start', {
+        fetch('/start', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username })
@@ -40,7 +40,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Please enter a username and a game ID.');
             return;
         }
-        fetch('http://localhost:3000/join', {
+        fetch('/join', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, gameId })
@@ -65,7 +65,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function makeMove(index) {
-        fetch('http://localhost:3000/move', {
+        fetch('/move', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ gameId: gameId, symbol: playerSymbol, tile: index })
