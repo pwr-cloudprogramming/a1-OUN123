@@ -18,7 +18,7 @@ body {
 }
 
 #game-board {
-    display: none; /* Hidden by default, shown when game starts */
+    display: none; 
     grid-template-columns: repeat(3, 100px);
     grid-gap: 10px;
     margin-top: 20px;

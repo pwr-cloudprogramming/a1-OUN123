@@ -2,18 +2,17 @@ version: '3.8'
 
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
     ports:
       - "3000:3000"
-    volumes:
-      - ./backend:/app
-    command: npm start
     restart: unless-stopped
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
     ports:
       - "80:80"
-    # volumes:
-      # - ./frontend:/usr/share/nginx/html
+    depends_on:
+      - backend
     restart: unless-stopped
